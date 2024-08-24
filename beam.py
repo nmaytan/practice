@@ -100,7 +100,7 @@ def main():
     # noise can additive or subtractive
     noise1 = rng.uniform(noise_value * -1, noise_value, H.shape)
     noise2 = np.random.default_rng(seed).uniform(noise_fuzz * -1, noise_fuzz, H.shape)
-    noise3 = np.clip(noise1 + noise2, -1, 1)
+    noise3 = noise1 + noise2
 
     # add unfuzzed noise source to image
     H_noised_unclipped = H + noise1
