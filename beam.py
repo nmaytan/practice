@@ -79,7 +79,7 @@ def main():
 
     # create the 2D histogram (density/intensity)
     # there are multiple ways to specify bins which should be equivalent here,
-    # but we use the [array, array] signature for linspace() for pracice
+    # but we use the [array, array] signature for linspace() for practice
     # H, xedges, yedges = np.histogram2d(beam_clean[:, 0], beam_clean[:, 1], bins=100, density=True)
     H, xedges, yedges = np.histogram2d(
         particle_distribution[:, 0],
@@ -87,7 +87,7 @@ def main():
         bins=[x_bin_edges, y_bin_edges],
         density=False,
     )
-    # ^density setting (return pdf vs raw count) setting doesn't matter, we are going to normalize the histogram
+    # ^density setting (return pdf vs raw count) doesn't matter; we are going to normalize the histogram
     #  so that we can apply noise
 
     H /= H.max()  # Normalize the histogram
@@ -118,7 +118,7 @@ def main():
     X, Y = np.meshgrid(xedges[:-1], yedges[:-1], indexing="ij")
     # ^edges could be specified with 1D or 2D arrays here and should be equivalent
     #  this is setting the bin positions, so must be edges - 1
-    #  "ij" indexing is needed to get expected axes convetion
+    #  "ij" indexing is needed to get expected axes convention
 
     plot_beam_and_noise(
         particle_distribution, H, H_noised, H_filtered, noise_raw, noise_filter, X, Y
