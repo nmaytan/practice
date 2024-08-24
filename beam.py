@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 
 def plot_beam_and_noise(
-    particle_distribution, H, H_noised, H_filtered, noise, noise_fuzzed, X, Y
+    particle_distribution, H, H_noised, H_filtered, noise_raw, noise_filter, X, Y
 ):
     fig, axs = plt.subplots(2, 3, figsize=(15, 10))
     fig.suptitle("Components of beam image simulation")
@@ -32,19 +32,19 @@ def plot_beam_and_noise(
     c4 = axs[1, 1].contourf(X, Y, H_filtered, cmap="plasma", levels=100)
     cbar4 = fig.colorbar(c4, label="Beam Intensity")
 
-    axs[0, 2].set_title("Simulated Noise - Unfuzzed")
+    axs[0, 2].set_title("Simulated Noise - Raw")
     axs[0, 2].set_xlabel("width")
     axs[0, 2].set_ylabel("height")
     axs[0, 2].axis("equal")
-    c5 = axs[0, 2].contourf(X, Y, noise, cmap="magma", levels=100)
+    c5 = axs[0, 2].contourf(X, Y, noise_raw, cmap="magma", levels=100)
     # c5.set_clim(-1, 1)
     cbar5 = fig.colorbar(c5, label="Noise Intensity")
 
-    axs[1, 2].set_title("Simulated Noise - Fuzzed")
+    axs[1, 2].set_title("Simulated Noise - Filter")
     axs[1, 2].set_xlabel("width")
     axs[1, 2].set_ylabel("height")
     axs[1, 2].axis("equal")
-    c6 = axs[1, 2].contourf(X, Y, noise_fuzzed, cmap="magma", levels=100)
+    c6 = axs[1, 2].contourf(X, Y, noise_filter, cmap="magma", levels=100)
     # c6.set_clim(-1, 1)
     cbar6 = fig.colorbar(c6, label="Noise Intensity")
 
@@ -61,7 +61,7 @@ def main():
     axes_max = 100  # unit-length of distribution axes
     histogram_bins = 100  # number of histogram bins to use
     noise_value = 0.15  # noise magnitude
-    noise_fuzz = 0.05  # noise fuzz magnitude
+    fuzz_value = 0.05  # fuzz magnitude
 
     # generate 2D distribution
     particle_distribution = rng.multivariate_normal(mean, cov, size)
@@ -96,18 +96,22 @@ def main():
     #  so transpose before visualizing.
 
     # Generate white noise to apply to image
-    # also generate slightly different noise to use as an image filter
+    # also generate slightly different noise to make image filter imperfect
     # noise can additive or subtractive
-    noise1 = rng.uniform(noise_value * -1, noise_value, H.shape)
-    noise2 = np.random.default_rng(seed).uniform(noise_fuzz * -1, noise_fuzz, H.shape)
-    noise3 = noise1 + noise2
+    noise_raw = rng.uniform(noise_value * -1, noise_value, H.shape)
+    noise_fuzz = np.random.default_rng(seed).uniform(
+        fuzz_value * -1, fuzz_value, H.shape
+    )
 
-    # add unfuzzed noise source to image
-    H_noised_unclipped = H + noise1
+    # add noise source to image
+    H_noised_unclipped = H + noise_raw
     # clip to display image within sensor limits
     H_noised = np.clip(H_noised_unclipped, 0, 1)
-    # subtract fuzzed noise filter from image
-    H_filtered_unclipped = H_noised_unclipped - noise3
+    # discoverable noise filter will be limited by sensor range
+    # also fuzz the filter to guarantee imperfection
+    noise_filter = H_noised - H + noise_fuzz
+    # subtract noise filter from image
+    H_filtered_unclipped = H_noised_unclipped - noise_filter
     # clip to display image within sensor limits
     H_filtered = np.clip(H_filtered_unclipped, 0, 1)
 
@@ -117,7 +121,7 @@ def main():
     #  "ij" indexing is needed to get expected axes convetion
 
     plot_beam_and_noise(
-        particle_distribution, H, H_noised, H_filtered, noise1, noise3, X, Y
+        particle_distribution, H, H_noised, H_filtered, noise_raw, noise_filter, X, Y
     )
 
 
