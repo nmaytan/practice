@@ -17,6 +17,8 @@ def plot_beam_and_noise(
     axs[0, 1].axis("equal")
     c2 = axs[0, 1].contourf(X, Y, H, cmap="plasma", levels=100)
     cbar2 = fig.colorbar(c2, label="Beam Intensity")
+    # ^contourf coordinates could be specified with 1D or 2D arrays and should be equivalent here,
+    #  we use the 2D arrays signature for an excuse to use meshgrid()
 
     axs[1, 0].set_title("Simulated Detector Image (Gaussian Spot) - Noised")
     axs[1, 0].set_xlabel("width")
@@ -116,9 +118,8 @@ def main():
     H_filtered = np.clip(H_filtered_unclipped, 0, 1)
 
     X, Y = np.meshgrid(xedges[:-1], yedges[:-1], indexing="ij")
-    # ^edges could be specified with 1D or 2D arrays here and should be equivalent
-    #  this is setting the bin positions, so must be edges - 1
-    #  "ij" indexing is needed to get expected axes convention
+    #  ^this is setting the bin positions, so must be edges - 1
+    #   "ij" indexing is needed to get expected axes convention
 
     plot_beam_and_noise(
         particle_distribution, H, H_noised, H_filtered, noise_raw, noise_filter, X, Y
